@@ -7,6 +7,17 @@ import {
   closePopupByOverlay,
   closePopupByEsc,
 } from "./components/modal";
+import {
+  showError,
+  hideError,
+  checkInputValidity,
+  setEventListeners,
+  hasInvalidInput,
+  toggleButtonState,
+  enableValidation,
+  validationConfig,
+  clearValidation,
+} from "./components/validation";
 
 const placesList = document.querySelector(".places__list");
 const editProfileButton = document.querySelector(".profile__edit-button");
@@ -26,11 +37,14 @@ initialCards.forEach((card) => {
   placesList.append(createCard(card, deleteCard, cardLike, openPopupImage));
 });
 
-editProfileButton.addEventListener("click", () => openPopupEdit(popupTypeEdit));
-addButton.addEventListener("click", () => openPopupWindow(popupTypeNewCard));
+editProfileButton.addEventListener("click", () => {
+  clearValidation(editProfileForm, validationConfig);
+  openPopupEdit(popupTypeEdit);
+});
 
-popups.forEach((popup) => {
-  closePopupByOverlay(popup);
+addButton.addEventListener("click", () => {
+  clearValidation(addImageForm, validationConfig);
+  openPopupWindow(popupTypeNewCard);
 });
 
 editProfileForm.addEventListener("submit", handleFormEditSubmit);
@@ -75,3 +89,15 @@ function openPopupEdit(popupTypeEdit) {
   jobInput.value = profileDescription.textContent;
   openPopupWindow(popupTypeEdit);
 }
+
+enableValidation(validationConfig);
+
+// return fetch("https://nomoreparties.co/v1/wff-cohort-12/cards", {
+//   headers: {
+//     authorization: "244bef85-21c0-4152-acf2-eaedf37c3fbc",
+//   },
+// })
+//   .then((res) => res.json())
+//   .then((result) => {
+//     console.log(result);
+//   });
