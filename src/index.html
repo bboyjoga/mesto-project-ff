@@ -14,7 +14,10 @@
   </header>
   <main class="content">
     <section class="profile page__section">
-      <div class="profile__image" style="background-image: url(<%=require('./images/avatar.jpg')%>);"></div>
+      <div class="profile__image" style="background-image: url(<%=require('./images/avatar.jpg')%>);">
+        <div class="pen">
+        </div>
+      </div>
       <div class="profile__info">
         <h1 class="profile__title">Жак-Ив Кусто</h1>
         <button class="profile__edit-button" type="button"></button>
@@ -41,7 +44,8 @@
         <span class="form__input-error name-input-error"></span>
         <input type="text" name="description" id="description-input" class="popup__input popup__input_type_description" placeholder="Занятие" minlength="2" maxlength="200" required pattern="^[а-яА-ЯёЁa-zA-Z \-]+$" data-error-message="Разрешены только латинские, кириллические буквы, знаки дефиса и пробелы">
         <span class="form__input-error description-input-error"></span>
-        <button type="submit" class="button popup__button">Сохранить</button>
+        <button type="submit" class="button popup__button"><span class="safe">Сохранить</span><span class="loading">Сохранение...</span></button>
+        
       </form>
     </div>
   </div>
@@ -54,10 +58,23 @@
         <span class="form__input-error place-name-input-error"></span>
         <input type="url" name="link" id="link-input" class="popup__input popup__input_type_url" placeholder="Ссылка на картинку" required>
         <span class="form__input-error link-input-error"></span>
-        <button type="submit" class="button popup__button">Сохранить</button>
+        <button type="submit" class="button popup__button"><span class="safe">Сохранить</span><span class="loading">Сохранение...</span></button>
       </form>
     </div>
   </div>
+
+  <div class="popup popup_type_edit-avatar popup_is-animated">
+    <div class="popup__content-avatar">
+      <button type="button" class="popup__close"></button>
+      <h3 class="popup__title">Обновить аватар</h3>
+      <form class="popup__form" name="new-place" novalidate>
+        <input type="url" name="link" id="link-input" class="popup__input popup__input_type_url" placeholder="Ссылка на картинку" required>
+        <span class="form__input-error link-input-error"></span>
+        <button type="submit" class="button popup__button"><span class="safe">Сохранить</span><span class="loading">Сохранение...</span></button>
+      </form>
+    </div>
+  </div>
+
   <div class="popup popup_type_image popup_is-animated">
     <div class="popup__content popup__content_content_image">
       <button type="button" class="popup__close"></button>
@@ -67,7 +84,6 @@
   </div>
 </div>
 
-
 <template id="card-template">
   <li class="places__item card">
     <img class="card__image" src="" alt="" />
@@ -75,7 +91,10 @@
     <div class="card__description">
       <h2 class="card__title">
       </h2>
+      <div class="likes">
       <button type="button" class="card__like-button"></button>
+      <span class="card__like-times"></span>
+      </div>
     </div>
   </li>
 </template>

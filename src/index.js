@@ -1,23 +1,18 @@
 import "./pages/index.css";
-import { initialCards } from "./scripts/cards";
-import { createCard, cardLike, deleteCard } from "./components/card";
+import { createCard } from "./components/card";
+import { openPopupWindow, closePopupWindow } from "./components/modal";
 import {
-  openPopupWindow,
-  closePopupWindow,
-  closePopupByOverlay,
-  closePopupByEsc,
-} from "./components/modal";
-import {
-  showError,
-  hideError,
-  checkInputValidity,
-  setEventListeners,
-  hasInvalidInput,
-  toggleButtonState,
   enableValidation,
   validationConfig,
   clearValidation,
 } from "./components/validation";
+import {
+  getUser,
+  getCards,
+  patchProfile,
+  createCardPost,
+  patchAvatar,
+} from "./components/api";
 
 const placesList = document.querySelector(".places__list");
 const editProfileButton = document.querySelector(".profile__edit-button");
@@ -25,17 +20,16 @@ const addButton = document.querySelector(".profile__add-button");
 const popupTypeEdit = document.querySelector(".popup_type_edit");
 const popupTypeNewCard = document.querySelector(".popup_type_new-card");
 const popupTypeImage = document.querySelector(".popup_type_image");
-const popups = document.querySelectorAll(".popup");
 const editProfileForm = popupTypeEdit.querySelector(".popup__form");
 const addImageForm = popupTypeNewCard.querySelector(".popup__form");
 const nameInput = popupTypeEdit.querySelector(".popup__input_type_name");
 const jobInput = popupTypeEdit.querySelector(".popup__input_type_description");
 const profileTitle = document.querySelector(".profile__title");
 const profileDescription = document.querySelector(".profile__description");
-
-initialCards.forEach((card) => {
-  placesList.append(createCard(card, deleteCard, cardLike, openPopupImage));
-});
+const profileImage = document.querySelector(".profile__image");
+const editAvatarButton = document.querySelector(".profile__image");
+const popupEditAvatar = document.querySelector(".popup_type_edit-avatar");
+const addAvatarForm = popupEditAvatar.querySelector(".popup__form");
 
 editProfileButton.addEventListener("click", () => {
   clearValidation(editProfileForm, validationConfig);
@@ -47,31 +41,77 @@ addButton.addEventListener("click", () => {
   openPopupWindow(popupTypeNewCard);
 });
 
+editAvatarButton.addEventListener("click", () => {
+  clearValidation(addAvatarForm, validationConfig);
+  openPopupWindow(popupEditAvatar);
+});
+
 editProfileForm.addEventListener("submit", handleFormEditSubmit);
 addImageForm.addEventListener("submit", createNewCard);
+addAvatarForm.addEventListener("submit", replaceAvatar);
+
+//Замена аватарки
+function replaceAvatar(evt) {
+  evt.preventDefault();
+  renderLoading(true);
+  const avatarUrl = popupEditAvatar.querySelector(".popup__input_type_url");
+  patchAvatar({ avatar: avatarUrl.value })
+    .then((response) => {
+      profileImage.link = response.avatar;
+      profileImage.style.backgroundImage = `url(${response.avatar})`;
+    })
+    .catch((err) => {
+      console.log(`Ошибка: ${err}`);
+    })
+    .finally(() => {
+      renderLoading(false);
+    });
+  closePopupWindow(popupEditAvatar);
+}
 
 // Добавление новой карточки
 function createNewCard(evt) {
   evt.preventDefault();
+  renderLoading(true);
   const cardName = popupTypeNewCard.querySelector(
     ".popup__input_type_card-name"
   );
   const cardUrl = popupTypeNewCard.querySelector(".popup__input_type_url");
-  const dataCard = {
-    name: cardName.value,
-    link: cardUrl.value,
-  };
-  const newCard = createCard(dataCard, deleteCard, cardLike, openPopupImage);
-  placesList.prepend(newCard);
-  closePopupWindow(popupTypeNewCard);
-  addImageForm.reset();
+  createCardPost({ name: cardName.value, link: cardUrl.value })
+    .then((response) => {
+      const dataCard = {
+        name: response.name,
+        link: response.link,
+        cardid: response._id,
+      };
+      const newCard = createCard(dataCard, openPopupImage);
+      placesList.prepend(newCard);
+      closePopupWindow(popupTypeNewCard);
+      addImageForm.reset();
+    })
+    .catch((err) => {
+      console.log(`Ошибка: ${err}`);
+    })
+    .finally(() => {
+      renderLoading(false);
+    });
 }
 
 // Редактирование информации профиля
 function handleFormEditSubmit(evt) {
   evt.preventDefault();
-  profileTitle.textContent = nameInput.value;
-  profileDescription.textContent = jobInput.value;
+  renderLoading(true);
+  patchProfile({ name: nameInput.value, about: jobInput.value })
+    .then((response) => {
+      profileTitle.textContent = response.name;
+      profileDescription.textContent = response.about;
+    })
+    .catch((err) => {
+      console.log(`Ошибка: ${err}`);
+    })
+    .finally(() => {
+      renderLoading(false);
+    });
   closePopupWindow(popupTypeEdit);
 }
 
@@ -92,12 +132,53 @@ function openPopupEdit(popupTypeEdit) {
 
 enableValidation(validationConfig);
 
-// return fetch("https://nomoreparties.co/v1/wff-cohort-12/cards", {
-//   headers: {
-//     authorization: "244bef85-21c0-4152-acf2-eaedf37c3fbc",
-//   },
-// })
-//   .then((res) => res.json())
-//   .then((result) => {
-//     console.log(result);
-//   });
+//Получаем информацию о пользователе и выводим карточки
+Promise.all([getUser(), getCards()])
+  .then(([user, data]) => {
+    const Name = user.name;
+    const About = user.about;
+    document.querySelector(".profile__title").innerHTML = Name;
+    document.querySelector(".profile__description").innerHTML = About;
+    document.querySelector(
+      ".profile__image"
+    ).style.backgroundImage = `url(${user.avatar})`;
+
+    Array.from(data).forEach((item) => {
+      const dataCard = {
+        name: item.name,
+        link: item.link,
+        likes: item.likes,
+        owner: item.owner._id,
+        cardid: item._id,
+      };
+      const cardObject = createCard(dataCard, openPopupImage, user._id);
+      placesList.append(cardObject);
+    });
+  })
+  .catch((err) => {
+    console.log(`Ошибка: ${err}`);
+  })
+  .finally(() => {
+    renderLoading(false);
+  });
+
+//Добавление текста «Сохранение...», пока данные загружаются
+function renderLoading(isLoading) {
+  const safeButtons = Array.from(document.querySelectorAll(".safe"));
+  const loadingButtons = Array.from(document.querySelectorAll(".loading"));
+  if (isLoading) {
+    safeButtons.forEach((item) => {
+      item.classList.add("safe__hidden");
+    });
+    loadingButtons.forEach((item) => {
+      item.classList.add("loading__visible");
+    });
+  } else {
+    safeButtons.forEach((item) => {
+      item.classList.remove("safe__hidden");
+    });
+    loadingButtons.forEach((item) => {
+      item.classList.remove("loading__visible");
+    });
+  }
+}

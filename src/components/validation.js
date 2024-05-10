@@ -31,12 +31,13 @@ export function checkInputValidity(
   inputElement,
   validationConfig
 ) {
-  if (inputElement.validity.patternMismatch) {
-    inputElement.setCustomValidity(inputElement.dataset.errorMessage);
-  } else {
-    inputElement.setCustomValidity("");
-  }
   if (!inputElement.validity.valid) {
+    let textError;
+    if (inputElement.validity.patternMismatch) {
+      textError = inputElement.dataset.errorMessage;
+    } else {
+      textError = inputElement.validationMessage;
+    }
     showError(
       formElement,
       inputElement,
@@ -93,6 +94,7 @@ export function enableValidation(validationConfig) {
 }
 
 export function clearValidation(formElement, validationConfig) {
+  formElement.reset();
   const arrayPopupButton = Array.from(
     formElement.querySelectorAll(validationConfig.submitButtonSelector)
   );

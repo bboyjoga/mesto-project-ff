@@ -1,6 +1,8 @@
 //Функции для работы с карточками
 // Создание карточки
-export function createCard(card, deleteCard, cardLike, openPopupImage) {
+import { deleteMyCard, putLikeCard, deleteLikeCard } from "./api";
+
+export function createCard(card, openPopupImage, currentUserId) {
   const cardTemplate = document.querySelector("#card-template").content;
   const cardElement = cardTemplate
     .querySelector(".places__item")
@@ -8,21 +10,40 @@ export function createCard(card, deleteCard, cardLike, openPopupImage) {
   const deleteCardButton = cardElement.querySelector(".card__delete-button");
   const cardImage = cardElement.querySelector(".card__image");
   const like = cardElement.querySelector(".card__like-button");
+  const likeTimes = cardElement.querySelector(".card__like-times");
   cardImage.alt = card.name;
   cardImage.src = card.link;
+  likeTimes.textContent = card.likes.length;
+  const isLiked = card.likes.some((item) => {
+    return item._id === currentUserId;
+  });
+  if (isLiked) {
+    like.classList.add("card__like-button_is-active");
+  }
   cardElement.querySelector(".card__title").textContent = card.name;
-  deleteCardButton.addEventListener("click", () => deleteCard(cardElement));
+  deleteCardButton.addEventListener("click", () => {
+    deleteMyCard(card.cardid).then(() => {
+      cardElement.remove();
+    });
+  });
   cardImage.addEventListener("click", () => openPopupImage(cardImage));
-  like.addEventListener("click", () => cardLike(like));
+  // Постановка и снятие лайка
+  like.addEventListener("click", () => {
+    const isActive = like.classList.contains("card__like-button_is-active");
+    if (isActive) {
+      deleteLikeCard(card.cardid).then((response) => {
+        likeTimes.textContent = response.likes.length;
+        like.classList.remove("card__like-button_is-active");
+      });
+    } else {
+      putLikeCard(card.cardid).then((response) => {
+        likeTimes.textContent = response.likes.length;
+        like.classList.add("card__like-button_is-active");
+      });
+    }
+  });
+  if (card.owner !== currentUserId) {
+    deleteCardButton.remove();
+  }
   return cardElement;
-}
-
-// Лайк карточки
-export function cardLike(like) {
-  like.classList.toggle("card__like-button_is-active");
-}
-
-// Удаление карточки
-export function deleteCard(cardElement) {
-  cardElement.remove();
 }

@@ -10,9 +10,6 @@ export function openPopupWindow(popup) {
 // Закрытие попапа
 export function closePopupWindow(popup) {
   popup.classList.remove("popup_is-opened");
-  const popupTypeNewCard = document.querySelector(".popup_type_new-card");
-  const addImageForm = popupTypeNewCard.querySelector(".popup__form");
-  addImageForm.reset();
   document.removeEventListener("keydown", closePopupByEsc);
   document.removeEventListener("click", closePopupByOverlay);
 }
