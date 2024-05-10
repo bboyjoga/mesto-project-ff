@@ -83,6 +83,7 @@ function createNewCard(evt) {
         name: response.name,
         link: response.link,
         cardid: response._id,
+        likes: response.likes,
       };
       const newCard = createCard(dataCard, openPopupImage);
       placesList.prepend(newCard);
@@ -142,7 +143,6 @@ Promise.all([getUser(), getCards()])
     document.querySelector(
       ".profile__image"
     ).style.backgroundImage = `url(${user.avatar})`;
-
     Array.from(data).forEach((item) => {
       const dataCard = {
         name: item.name,
