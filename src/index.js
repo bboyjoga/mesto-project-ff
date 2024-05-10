@@ -142,7 +142,6 @@ Promise.all([getUser(), getCards()])
     document.querySelector(
       ".profile__image"
     ).style.backgroundImage = `url(${user.avatar})`;
-
     Array.from(data).forEach((item) => {
       const dataCard = {
         name: item.name,
