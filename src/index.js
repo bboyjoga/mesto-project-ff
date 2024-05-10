@@ -83,6 +83,7 @@ function createNewCard(evt) {
         name: response.name,
         link: response.link,
         cardid: response._id,
+        likes: response.likes,
       };
       const newCard = createCard(dataCard, openPopupImage);
       placesList.prepend(newCard);
