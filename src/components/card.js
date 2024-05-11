@@ -24,6 +24,9 @@ export function createCard(card, openPopupImage, currentUserId) {
   deleteCardButton.addEventListener("click", () => {
     deleteMyCard(card.cardid).then(() => {
       cardElement.remove();
+    })
+    .catch((err) => {
+      console.log(`Ошибка: ${err}`);
     });
   });
   cardImage.addEventListener("click", () => openPopupImage(cardImage));
@@ -34,11 +37,17 @@ export function createCard(card, openPopupImage, currentUserId) {
       deleteLikeCard(card.cardid).then((response) => {
         likeTimes.textContent = response.likes.length;
         like.classList.remove("card__like-button_is-active");
+      })
+      .catch((err) => {
+        console.log(`Ошибка: ${err}`);
       });
     } else {
       putLikeCard(card.cardid).then((response) => {
         likeTimes.textContent = response.likes.length;
         like.classList.add("card__like-button_is-active");
+      })
+      .catch((err) => {
+        console.log(`Ошибка: ${err}`);
       });
     }
   });

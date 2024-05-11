@@ -5,6 +5,7 @@ export const validationConfig = {
   inactiveButtonClass: "popup__button_disabled",
   inputErrorClass: "popup__input_type_error",
   errorClass: "popup__error_visible",
+  formInputError: ".form__input-error",
 };
 
 export function showError(
@@ -103,7 +104,7 @@ export function clearValidation(formElement, validationConfig) {
   });
 
   const arraySpanError = Array.from(
-    formElement.querySelectorAll(".form__input-error")
+    formElement.querySelectorAll(validationConfig.formInputError)
   );
   arraySpanError.forEach((item) => {
     item.classList.remove(validationConfig.errorClass);
