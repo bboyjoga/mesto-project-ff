@@ -32,26 +32,8 @@ const popupEditAvatar = document.querySelector(".popup_type_edit-avatar");
 const addAvatarForm = popupEditAvatar.querySelector(".popup__form");
 const avatarUrl = popupEditAvatar.querySelector(".popup__input_type_url");
 const cardName = popupTypeNewCard.querySelector(".popup__input_type_card-name");
+const cardUrl = popupTypeNewCard.querySelector(".popup__input_type_url");
 const popupImage = popupTypeImage.querySelector(".popup__image");
-
-editProfileButton.addEventListener("click", () => {
-  clearValidation(buttonOpenPopupProfile, validationConfig);
-  openPopupEdit(popupTypeEdit);
-});
-
-addButton.addEventListener("click", () => {
-  clearValidation(addImageForm, validationConfig);
-  openPopupWindow(popupTypeNewCard);
-});
-
-editAvatarButton.addEventListener("click", () => {
-  clearValidation(addAvatarForm, validationConfig);
-  openPopupWindow(popupEditAvatar);
-});
-
-buttonOpenPopupProfile.addEventListener("submit", handleFormEditSubmit);
-addImageForm.addEventListener("submit", createNewCard);
-addAvatarForm.addEventListener("submit", replaceAvatar);
 
 //Замена аватарки
 function replaceAvatar(evt) {
@@ -60,6 +42,7 @@ function replaceAvatar(evt) {
   patchAvatar({ avatar: avatarUrl.value })
     .then((response) => {
       profileImage.style.backgroundImage = `url(${response.avatar})`;
+      closePopupWindow(popupEditAvatar);
     })
     .catch((err) => {
       console.log(`Ошибка: ${err}`);
@@ -67,14 +50,12 @@ function replaceAvatar(evt) {
     .finally(() => {
       renderLoading(popupEditAvatar, false);
     });
-  closePopupWindow(popupEditAvatar);
 }
 
 // Добавление новой карточки
 function createNewCard(evt) {
   evt.preventDefault();
   renderLoading(popupTypeNewCard, true);
-  const cardUrl = popupTypeNewCard.querySelector(".popup__input_type_url");
   createCardPost({ name: cardName.value, link: cardUrl.value })
     .then((response) => {
       const dataCard = {
@@ -104,6 +85,7 @@ function handleFormEditSubmit(evt) {
     .then((response) => {
       profileTitle.textContent = response.name;
       profileDescription.textContent = response.about;
+      closePopupWindow(popupTypeEdit);
     })
     .catch((err) => {
       console.log(`Ошибка: ${err}`);
@@ -111,7 +93,6 @@ function handleFormEditSubmit(evt) {
     .finally(() => {
       renderLoading(popupTypeEdit, false);
     });
-  closePopupWindow(popupTypeEdit);
 }
 
 // Открытие попапа при клике на картинку
@@ -127,6 +108,19 @@ function openPopupEdit(popupTypeEdit) {
   nameInput.value = profileTitle.textContent;
   jobInput.value = profileDescription.textContent;
   openPopupWindow(popupTypeEdit);
+}
+
+//Добавление текста «Сохранение...», пока данные загружаются
+function renderLoading(element, isLoading) {
+  const safeButton = element.querySelector(".safe");
+  const loadingButton = element.querySelector(".loading");
+  if (isLoading) {
+    safeButton.classList.add("safe__hidden");
+    loadingButton.classList.add("loading__visible");
+  } else {
+    safeButton.classList.remove("safe__hidden");
+    loadingButton.classList.remove("loading__visible");
+  }
 }
 
 //Получаем информацию о пользователе и выводим карточки
@@ -155,17 +149,23 @@ Promise.all([getUser(), getCards()])
     console.log(`Ошибка: ${err}`);
   });
 
-//Добавление текста «Сохранение...», пока данные загружаются
-function renderLoading(element, isLoading) {
-  const safeButton = element.querySelector(".safe");
-  const loadingButton = element.querySelector(".loading");
-  if (isLoading) {
-    safeButton.classList.add("safe__hidden");
-    loadingButton.classList.add("loading__visible");
-  } else {
-    safeButton.classList.remove("safe__hidden");
-    loadingButton.classList.remove("loading__visible");
-  }
-}
+editProfileButton.addEventListener("click", () => {
+  clearValidation(buttonOpenPopupProfile, validationConfig);
+  openPopupEdit(popupTypeEdit);
+});
+
+addButton.addEventListener("click", () => {
+  clearValidation(addImageForm, validationConfig);
+  openPopupWindow(popupTypeNewCard);
+});
+
+editAvatarButton.addEventListener("click", () => {
+  clearValidation(addAvatarForm, validationConfig);
+  openPopupWindow(popupEditAvatar);
+});
+
+buttonOpenPopupProfile.addEventListener("submit", handleFormEditSubmit);
+addImageForm.addEventListener("submit", createNewCard);
+addAvatarForm.addEventListener("submit", replaceAvatar);
 
 enableValidation(validationConfig);
