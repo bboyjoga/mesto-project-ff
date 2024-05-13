@@ -132,8 +132,8 @@ Promise.all([getUser(), getCards()])
   .then(([user, data]) => {
     const name = user.name;
     const about = user.about;
-    profileTitle.innerHTML = name;
-    profileDescription.innerHTML = about;
+    profileTitle.textContent = name;
+    profileDescription.textContent = about;
     document.querySelector(
       ".profile__image"
     ).style.backgroundImage = `url(${user.avatar})`;
